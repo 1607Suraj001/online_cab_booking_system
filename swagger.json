@@ -1,0 +1,457 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "description": "",
+        "title": "Online Cab Booking System"
+    },
+    "host": "localhost:3000",
+    "basePath": "/",
+    "schemes": [
+        "http"
+    ],
+    "paths": {
+        "/admin/signup": {
+            "post": {
+                "tags":["admin"],
+                "description": "Registering a admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email Id",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "First Name",
+                        "name": "fname",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Last Name",
+                        "name": "lname",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phone Number",
+                        "name": "phone",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "password",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "password",
+                        "description": "Confirm Password",
+                        "name": "confrm_password",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/admin/login": {
+            "get": {"tags":["admin"],
+                "description": "Admin Login and Token generation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email Id",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "password",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/admin/view_all_admin": {
+            "get": {"tags":["admin"],
+                "description": "Admin table view only visible to member admins",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Admin Token",
+                        "name": "token",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/admin/get_pending_requests": {
+            "get": {"tags":["admin"],
+                "description": "Get all pending requests in Booking Table to whom drivers are Not assigned ",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "token",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/admin/get_available_drivers": {
+            "get": {"tags":["admin"],
+                "description": "Getting all drivers which are Not bounded by any booking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "token",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/admin/assign_driver": {
+            "put": {"tags":["admin"],
+                "description": "Assignig a driver to pending requests",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Admin_Token",
+                        "name": "token",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Driver_id",
+                        "name": "driver_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Booking_id",
+                        "name": "booking_id",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/admin/get_logs_particular": {
+            "get": {"tags":["admin"],
+                "description": "Getting logs of the particular booking_id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "token",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "description": "booking_id",
+                        "name": "booking_id",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+
+            
+        "/driver/driver_signup": {
+            "post": {"tags":["driver"],
+                "description": "Driver Registration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email Id",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "First Name",
+                        "name": "fname",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Last Name",
+                        "name": "lname",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phone Number",
+                        "name": "phone",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "password",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "password",
+                        "description": "Confirm Password",
+                        "name": "confrm_password",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+    "/driver/login":{
+        "get":{"tags":["driver"],
+            "description":"Driver Login and Token Generation",
+            "parameters":[ 
+            {
+                "type": "string",
+                "description": "Email Id",
+                "name": "email",
+                "in": "formData"
+            },
+            {
+                "type": "password",
+                "description": "Password",
+                "name": "password",
+                "in": "formData"
+            }
+                
+            ],
+            "responses":{
+                "200":{
+                    "description":  ""
+                }
+            }
+        }
+    },
+    "/driver/request_completed":{
+        "post":{"tags":["driver"],
+            "description":"Saving request completion time in Booking table and updating driver status and availablitity in driver",
+            "parameters":[ 
+            {
+                "type": "string",
+                "description": "Driver Token",
+                "name": "token",
+                "in": "formData"
+            }   
+            ],
+            "responses":{
+                "200":{
+                    "description":  ""
+                }
+            }
+        }
+    },
+    "/driver/assigned_customer":{
+        "get":{"tags":["driver"],
+            "description":"View customer detials which is assigned to the driver",
+            "parameters":[ 
+            {
+                "type": "string",
+                "description": "Token",
+                "name": "token",
+                "in": "formData"
+            }   
+            ],
+            "responses":{
+                "200":{
+                    "description":  ""
+                }
+            }
+        }
+    },
+       "/customer/customer_signup": {
+        "post": {"tags":["customer"],
+            "description": "Customer Registration",
+            "parameters": [
+                {
+                    "type": "string",
+                    "description": "Email Id",
+                    "name": "email",
+                    "in": "formData"
+                },
+                {
+                    "type": "string",
+                    "description": "First Name",
+                    "name": "fname",
+                    "in": "formData"
+                },
+                {
+                    "type": "string",
+                    "description": "Last Name",
+                    "name": "lname",
+                    "in": "formData"
+                },
+                {
+                    "type": "string",
+                    "description": "Phone Number",
+                    "name": "phone",
+                    "in": "formData"
+                },
+                {
+                    "type": "password",
+                    "description": "Password",
+                    "name": "password",
+                    "in": "formData"
+                },
+                {
+                    "type": "password",
+                    "description": "Confirm Password",
+                    "name": "confrm_password",
+                    "in": "formData"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": ""
+                }
+            }
+        }
+    },
+    "/customer/login": {
+        "get": {"tags":["customer"],
+            "description": "Customer login and token generation",
+            "parameters": [
+                {
+                    "type": "string",
+                    "description": "Email Id",
+                    "name": "email",
+                    "in": "formData"
+                },
+                {
+                    "type": "password",
+                    "description": "Password",
+                    "name": "password",
+                    "in": "formData"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": ""
+                }
+            }
+        }
+    },
+    "/customer/book": {
+        "post": {"tags":["customer"],
+            "description": "Customer booking and getting lat/long of source and destination",
+            "parameters": [
+                {
+                    "type": "string",
+                    "description": "Email Id",
+                    "name": "email",
+                    "in": "formData"
+                },
+                {
+                    "type": "float",
+                    "description": "Source_Latitude",
+                    "name": "source_lat",
+                    "in": "formData"
+                },
+                {
+                    "type": "float",
+                    "description": "Source_Longitude",
+                    "name": "source_long",
+                    "in": "formData"
+                },
+                {
+                    "type": "float",
+                    "description": "Destination_Latitude",
+                    "name": "dest_lat",
+                    "in": "formData"
+                },
+                {
+                    "type": "float",
+                    "description": "Destination_Longitude",
+                    "name": "dest_long",
+                    "in": "formData"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": ""
+                }
+            }
+        }
+    },
+    "/customer/all_confirmed_bookings": {
+        "get": {"tags":["customer"],
+            "description": "Customer view its all confirmed bookings",
+            "parameters": [
+                {
+                    "type": "string",
+                    "description": "Token",
+                    "name": "token",
+                    "in": "formData"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": ""
+                }
+            }
+        }
+    },
+    "/customer/all_pending_bookings": {
+        "get": {"tags":["customer"],
+            "description": "Customer view its all confirmed bookings",
+            "parameters": [
+                {
+                    "type": "string",
+                    "description": "Token",
+                    "name": "token",
+                    "in": "formData"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": ""
+                }
+            }
+        }
+    }
+    }
+}
