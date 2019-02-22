@@ -75,26 +75,26 @@ exports.is_already_registered = async (req, res, next) => {
 
 /*********logging in user & Generating token */
 exports.login = async (req, res, next) => {
-    let email = req.body.email;
+    let email = req.query.email;
     console.log('Email +++ ', email)
 
     let rest = await DBA.execQuery(DBSTATEMENT.admin_data, email)
 
     if (rest[0]) {
-        let v = await BCRYPT.compareSync(req.body.password, rest[0].admin_password);
+        let v = await BCRYPT.compareSync(req.query.password, rest[0].admin_password);
         if (v) {
             let token = await JWT.sign(email, SECRET_KEY)
 
             if (token) {
                 res.json({
-                    "status": 200,
+                    "status_code": 200,
                     "Message": 'login successfully',
                     "Data": { Token: token, id: rest[0].admin_id, fname: rest[0].admin_fname, lname: rest[0].admin_lname, email: rest[0].admin_email, phone: rest[0].admin_phone }
                 });
             }
             else {
                 res.json({
-                    "statusCode": 400,
+                    "status_code": 400,
                     "error": "Bad Request",
                     "message": "Token Generation Error"
                 });
@@ -122,11 +122,11 @@ exports.login = async (req, res, next) => {
 
 /**************Verify admin */
 exports.verify_admin = async function (req, res, next) {
-    JWT.verify(req.body.token, SECRET_KEY, function (err, decoded) {
+    JWT.verify(req.query.token, SECRET_KEY, function (err, decoded) {
         if (err)
             res.json({
-                "statusCode": 401,
-                "error": "Unauthorised",
+                "statusCode": 400,
+                "error": err.name,
                 "message": err.message
             })
         else {
@@ -179,7 +179,7 @@ exports.view_all_admin = async (req, res, next) => {
 exports.get_pending_requests = async (req, res, next) => {
     let email;
     let data;
-    JWT.verify(req.body.token, SECRET_KEY, function (err, decoded) {
+    JWT.verify(req.query.token, SECRET_KEY, function (err, decoded) {
         if (err)
             res.json({
                 "statusCode": 401,
@@ -253,42 +253,83 @@ exports.assign_driver = async (req, res) => {
         booking_id = req.body.booking_id;
         console.log("adasd ,, dad", available_driver, booking_id)
 
-        rest = await DBA.execQuery(DBSTATEMENT.assign_driver, [available_driver, 0, booking_id])
-
+        //checking whether resquest pending or not , if pending then assign driver independently otherwise free current driver 
+            let data = await DBA.execQuery(DBSTATEMENT.check_whether_request_pending, [booking_id])
+            
+            if (data[0].request_pending === 1) {
+              
+                rest = await DBA.execQuery(DBSTATEMENT.assign_driver, [available_driver, 0, booking_id])
+            }
+            else {  //case when request is being hold by another driver
+                
+                //getting current driver_id which is assigned to pending  request
+                let data = await DBA.execQuery(DBSTATEMENT.get_current_assigned_driver_id, [booking_id])
+                
+                //assign new dreiver to pending request
+                rest = await DBA.execQuery(DBSTATEMENT.assign_driver, [available_driver, 0, booking_id])
+                
+                //update the row in driver_id of old driver
+                rest = await DBA.execQuery(DBSTATEMENT.update_driver_available, [1, null, data[0].driver_id])
+            }
     }
+
     catch (err) {
-        console.log("lasr rest +++++===", rest)
+    console.log("lasr rest +++++===", rest)
+    res.json({
+        "status_code": 400,
+        "message": err.name,
+        "data": err.message
+    })
+}
+finally {
+    if (rest.changedRows === 1) {
         res.json({
-            "status_code": 400,
-            "message": err.name,
-            "data": err.message
+            "status_code": 200,
+            "message": "Driver Successfully assigned and Booking Confirmed",
+            "data": {}
         })
     }
-    finally {
-        if (rest.changedRows) {
-            res.json({
-                "status_code": 200,
-                "message": "Driver Successfully assigned and Booking Confirmed",
-                "data": rest
-            })
-        }
-        else {
-            res.json({
-                "status_code": 400,
-                "message": "Driver Not Assigned",
-                "data": rest
-            })
-        }
+    else {
+        res.json({
+            "status_code": 400,
+            "message": "Driver Not Assigned",
+            "data": "Internal Error"
+        })
     }
 }
+        }
 /************Update Driver Avilable */
 exports.update_driver_available = async (req, res, next) => {
     let rest
     let available_driver = req.body.available_drivers;
     let booking_id = req.body.booking_id;
+    console.log("available drivers , bookingid", available_driver, booking_id)
     try {
-        rest = await DBA.execQuery(DBSTATEMENT.update_driver_available, [0, booking_id, available_driver])
-        console.log("rest ----- )))", rest)
+        try {
+            rest = await DBA.execQuery(DBSTATEMENT.already_assigned_or_not, [available_driver])
+        }
+        catch (err) {
+            res.json({
+                "status_code": 400,
+                "error": err.name,
+                "message": err.message
+            })
+        }
+        finally {
+            console.log("rest ----- )))", rest)
+
+            if (rest[0].driver_available === 1)
+                rest = await DBA.execQuery(DBSTATEMENT.update_driver_available, [0, booking_id, available_driver])
+            else {
+                console.log
+                console.log("Driver already assigned cannot reassign a busy driver")
+                res.json({
+                    "status_code": 400,
+                    "error": "Driver already assigned to another booking",
+                    "message": "Assign a free driver"
+                })
+            }
+        }
     }
     catch (err) {
         console.log("ERROR ", err)
@@ -298,9 +339,11 @@ exports.update_driver_available = async (req, res, next) => {
             "data": err.message
         })
     }
-    console.log("rest -----", rest)
-    if (rest) {
-        next();
+    finally {
+        console.log("rest -----", rest)
+        if (rest.changedRows === 1) {
+            next();
+        }
     }
 }
 
@@ -332,9 +375,9 @@ exports.get_logs_particular = function (req, res) {
     try {
         MongoClient.connect(url, function (err, db) {
             if (err) throw err;
-             let dbo = db.db("my_database");
-             console.log(req.body.booking_id)
-            let myobj = { Booking_id: req.body.booking_id.toString()};
+            let dbo = db.db("my_database");
+            console.log(req.body.booking_id)
+            let myobj = { Booking_id: req.body.booking_id.toString() };
 
             let collection_name = "customer_logs";
             dbo.collection(collection_name).findOne(myobj, function (err, res) {
@@ -346,28 +389,28 @@ exports.get_logs_particular = function (req, res) {
                         "message": err.message
                     })
                 }
-                console.log("adddddd",res)
-                    if (res) {
-                        console.log("ins second if",res)
-                        res.json({
-                            "status_code": 200,
-                            "message": "Booking Logs",
-                            "data": res
-                        })
-                    }
+                console.log("adddddd", res)
+                if (res) {
+                    console.log("ins second if", res)
+                    res.json({
+                        "status_code": 200,
+                        "message": "Booking Logs",
+                        "data": res
+                    })
+                }
             })
 
         })
     }
     catch (err) {
         console.log("in catch")
-       res.json({
-           "status_code" : 400,
-           "error" : err.name,
-           "message" : err.message
-       })
+        res.json({
+            "status_code": 400,
+            "error": err.name,
+            "message": err.message
+        })
     }
-    
+
 }
 /////////////  CUSTOMER HANDLER ///////////
 

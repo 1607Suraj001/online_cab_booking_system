@@ -45,7 +45,7 @@ exports.login = (req, res, next)=>{
         email : JOI.string().email({minDomainAtoms:2}).required(),
         password : JOI.string().regex(/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{5,30}$/).required()
     })
-    JOI.validate(req.body, schema, (err,result)=>{
+    JOI.validate(req.query, schema, (err,result)=>{
         if(err){
             console.log("ERR ++",err.details[0].message)
             res.json({

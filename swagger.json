@@ -68,13 +68,13 @@
                         "type": "string",
                         "description": "Email Id",
                         "name": "email",
-                        "in": "formData"
+                        "in": "query"
                     },
                     {
                         "type": "password",
                         "description": "Password",
                         "name": "password",
-                        "in": "formData"
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -92,7 +92,7 @@
                         "type": "string",
                         "description": "Admin Token",
                         "name": "token",
-                        "in": "formData"
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -110,7 +110,7 @@
                         "type": "string",
                         "description": "token",
                         "name": "token",
-                        "in": "formData"
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -128,7 +128,7 @@
                         "type": "string",
                         "description": "token",
                         "name": "token",
-                        "in": "formData"
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -146,12 +146,12 @@
                         "type": "string",
                         "description": "Admin_Token",
                         "name": "token",
-                        "in": "formData"
+                        "in": "query"
                     },
                     {
                         "type": "number",
                         "description": "Driver_id",
-                        "name": "driver_id",
+                        "name": "available_drivers",
                         "in": "formData"
                     },
                     {
@@ -250,13 +250,13 @@
                 "type": "string",
                 "description": "Email Id",
                 "name": "email",
-                "in": "formData"
+                "in": "query"
             },
             {
                 "type": "password",
                 "description": "Password",
                 "name": "password",
-                "in": "formData"
+                "in": "query"
             }
                 
             ],
@@ -275,7 +275,7 @@
                 "type": "string",
                 "description": "Driver Token",
                 "name": "token",
-                "in": "formData"
+                "in": "query"
             }   
             ],
             "responses":{
@@ -293,7 +293,7 @@
                 "type": "string",
                 "description": "Token",
                 "name": "token",
-                "in": "formData"
+                "in": "query"
             }   
             ],
             "responses":{
@@ -303,7 +303,7 @@
             }
         }
     },
-       "/customer/customer_signup": {
+       "/customer/signup": {
         "post": {"tags":["customer"],
             "description": "Customer Registration",
             "parameters": [
@@ -359,13 +359,13 @@
                     "type": "string",
                     "description": "Email Id",
                     "name": "email",
-                    "in": "formData"
+                    "in": "query"
                 },
                 {
                     "type": "password",
                     "description": "Password",
                     "name": "password",
-                    "in": "formData"
+                    "in": "query"
                 }
             ],
             "responses": {
@@ -379,11 +379,12 @@
         "post": {"tags":["customer"],
             "description": "Customer booking and getting lat/long of source and destination",
             "parameters": [
+                
                 {
                     "type": "string",
-                    "description": "Email Id",
-                    "name": "email",
-                    "in": "formData"
+                    "description": "token",
+                    "name": "token",
+                    "in": "query"
                 },
                 {
                     "type": "float",
@@ -425,7 +426,7 @@
                     "type": "string",
                     "description": "Token",
                     "name": "token",
-                    "in": "formData"
+                    "in": "query"
                 }
             ],
             "responses": {
@@ -443,7 +444,7 @@
                     "type": "string",
                     "description": "Token",
                     "name": "token",
-                    "in": "formData"
+                    "in": "query"
                 }
             ],
             "responses": {

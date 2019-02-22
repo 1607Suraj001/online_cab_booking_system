@@ -7,7 +7,7 @@ exports.all_admin_data = 'SELECT `admin_id`,`admin_fname`,`admin_lname`,`admin_p
 
 exports.verify_admin = 'SELECT `admin_id` FROM `admin` WHERE admin_email = ?'
 
-exports.update_driver_available = 'UPDATE `driver` SET `driver_available` = ?,`driver_current_status`=? WHERE `driver_id`=?'
+exports.update_driver_available = 'UPDATE `driver` SET `driver_available` = ?,`driver_current_status`=? WHERE `driver_id`=? '
 //****************** Queries for customer table
 exports.customer_signup = 'INSERT INTO `customer` (`customer_id`,`customer_fname`,`customer_lname`,`customer_email`,`customer_password`,`customer_phone`,`customer_history`) VALUES (NULL,?,?,?,?,?,NULL)'
 
@@ -28,6 +28,8 @@ exports.driver_data = 'SELECT * FROM `driver` WHERE driver_email = ?'
 exports.driver_signup = 'INSERT INTO `driver` ( `driver_id`,`driver_fname`,`driver_lname`,`driver_available`,`driver_current_status`,`driver_email`,`driver_password`,`driver_phone`,`driver_history`) VALUES (NULL,?,?,?,NULL,?,?,?,NULL)'
 
 exports.get_driver_id ='SELECT `driver_id`,`driver_current_status` FROM `driver` WHERE driver_email = ?'
+
+exports.already_assigned_or_not = 'SELECT `driver_available` FROM `driver` WHERE `driver_id` = ?'
 //*****************  Queries on booking table can oly be accessed by the admin
 
 //Inserting into booking
@@ -45,7 +47,12 @@ exports.assign_driver = 'UPDATE `booking` SET `driver_id` = ?,`request_pending` 
 //update task completion 
 exports.request_completed = 'UPDATE `booking` SET `request_completed` = NOW()  WHERE `driver_id`=? AND `booking_id`=? AND request_completed IS NULL'
 
-//get log
+//get request_pending
+exports.check_whether_request_pending = 'SELECT `request_pending` from `booking` WHERE `booking_id`=?'
+
+//get curernt driver of the pending request
+exports.get_current_assigned_driver_id = 'SELECT `driver_id` FROM `booking` WHERE booking_id = ?'
+
 exports.put_log = 'SELECT `booking_id`,`driver_fname`,`driver_lname`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`driver_assigning_time`,`request_completed`,`request_history`,`driver_phone`,`driver_email` FROM `driver`,`booking` WHERE booking.booking_id = ? AND driver.driver_id = booking.driver_id'
 //JOINS ++++++++++
 

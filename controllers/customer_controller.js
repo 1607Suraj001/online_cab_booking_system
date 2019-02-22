@@ -84,7 +84,7 @@ exports.customer_signup = async (req, res, next) => {
 }
 /**********CUSTOMER LOGIN ******/
 exports.customer_login = async (req, res, next) => {
-     email = req.body.email;
+     email = req.query.email;
 
      rest = await DBA.execQuery(DBSTATEMENT.customer_data, email)
 
@@ -93,7 +93,7 @@ exports.customer_login = async (req, res, next) => {
         customer_id = rest[0].customer_id;
         console.log("customer id from customer login ", customer_id)
 
-        let v = await BCRYPT.compareSync(req.body.password, rest[0].customer_password);
+        let v = await BCRYPT.compareSync(req.query.password, rest[0].customer_password);
         if (v) {
             let token = await JWT.sign(email, SECRET_KEY)
 
@@ -138,7 +138,7 @@ exports.customer_login = async (req, res, next) => {
 /************Verify Customer */
 exports.verify_customer = function(req,res,next){
     let token;
-     token = req.body.token;
+     token = req.query.token;
      
    
     JWT.verify(token,SECRET_KEY, function (err, decoded) {

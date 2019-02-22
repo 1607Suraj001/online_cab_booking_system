@@ -91,7 +91,7 @@ exports.driver_signup = async (req, res, next) => {
 
 /************DRIVER login ********/
 exports.driver_login = async (req, res, next) => {
-     email = req.body.email;
+     email = req.query.email;
    let v;
      try{
      rest = await DBA.execQuery(DBSTATEMENT.driver_data, email)
@@ -107,7 +107,7 @@ exports.driver_login = async (req, res, next) => {
      finally{
     if (rest[0]) {
         try{
-        v = await BCRYPT.compareSync(req.body.password, rest[0].driver_password);
+        v = await BCRYPT.compareSync(req.query.password, rest[0].driver_password);
         }
         catch(err)
         {
