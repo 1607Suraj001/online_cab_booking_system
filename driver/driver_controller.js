@@ -1,8 +1,9 @@
 const BCRYPT = require('bcryptjs')
 const JWT = require('jsonwebtoken')
-const DBSTATEMENT = require('../constants/dbquery.js')
-const DBA = require('../config/libs.js')
+const DBSTATEMENT = require('../services/dbquery.js')
+const DBA = require('../services/libs.js')
 const Promise = require('bluebird')
+const response  = require('../services/responses.js')
 
 const SECRET_KEY = '1234@abcd';
 
@@ -28,20 +29,12 @@ exports.driver_is_already_registered = async (req, res, next) => {
         rest = await DBA.execQuery(DBSTATEMENT.driver_data, email)
     }
     catch (err) {
-        res.json({
-            "status_code": 400,
-            "error": err.name,
-            "message": err.message
-        })
-    }
+        response.error(res,err.name,err.message)
+       }
     finally {
         if (rest) {
             if (rest.length) {
-                res.json({
-                    "statusCode": 400,
-                    "Error": "Bad Request",
-                    "message": "User Already Registered"
-                })
+                response.error(res,"Bad Request","User Already Registered")
             }
             else {
                 next();
@@ -60,31 +53,18 @@ exports.driver_signup = async (req, res, next) => {
     try {
         rest = await DBA.execQuery(DBSTATEMENT.driver_signup, obj)
     }
-    catch (err) {
-        res.json({
-            "status_code": 400,
-            "error": err.name,
-            "message": err.message
-        })
+    catch (err) { 
+        response.error(res,err.name,err.message)
     }
     finally {
         if (rest) {
             console.log("Rest ++++ ", rest)
             let data = { User_Id: rest.insertId, firstname: obj[0], lastname: obj[1], email: obj[3], phone: obj[5] };
 
-
-            res.json({
-                "status": 201,
-                "Message": 'Registered successfully',
-                "data": data
-            });
+   response.success(res,"Registered successfully",data)
         }
         else {
-            res.json({
-                "status": 400,
-                "error": err.name,
-                "message": err.message
-            });
+            response.error(res,err.name,err.message)
         }
     }
 }
@@ -98,11 +78,7 @@ exports.driver_login = async (req, res, next) => {
      }
      catch(err)
      {
-         res.json({
-             "status_code":400,
-             "error" : err.name,
-             "message" : err.message
-         })
+        response.error(res,err.name,err.message)
      }
      finally{
     if (rest[0]) {
@@ -111,11 +87,7 @@ exports.driver_login = async (req, res, next) => {
         }
         catch(err)
         {
-            res.json({
-                "status_code":400,
-                "error" : err.name,
-                "message" : err.message
-            })
+            response.error(res,err.name,err.message)
         }
         finally
         {
@@ -125,11 +97,7 @@ exports.driver_login = async (req, res, next) => {
             }
             catch(err)
         {
-            res.json({
-                "status_code" : 400,
-                "error":err.name,
-                "message" : err.message
-            })
+            response.error(res,err.name,err.message)
         }
         finally{
             if (token) {
@@ -174,7 +142,7 @@ exports.driver_login = async (req, res, next) => {
 }
 /******Driver Task Completion */
 exports.verify_driver = async function (req, res, next) {
-     token = req.body.token
+     token = req.query.token
 
     JWT.verify(token, SECRET_KEY, function (err, decoded) {
         if (err)
@@ -192,11 +160,7 @@ exports.verify_driver = async function (req, res, next) {
         driver_id = await DBA.execQuery(DBSTATEMENT.get_driver_id, email)
     }
     catch (err) {
-            res.json({
-                "status_code": 400,
-                "error": err.name,
-                "message": err.Message
-            })
+        response.error(res,err.name,err.message)
         }
     finally{
     if (driver_id) {
@@ -216,11 +180,7 @@ exports.request_completed = function (req, res, next) {
             next();
         }
         else {
-            res.json({
-                "status_code": 400,
-                "message": "cannot update task_completed",
-                "data": "error in parameters"
-            })
+     response.error(res,"cannot update task_completed","error in parameters")
         }
     })
 }
@@ -241,11 +201,7 @@ exports.updating_driver_available = function (req, res, next) {
             })*/
         }
         else {
-            res.json({
-                "status_code": 400,
-                "message": "Error in updating driver table",
-                "data": value
-            })
+            response.success(res,"Error in updating driver table",value)
         }
     })
 }
@@ -286,32 +242,20 @@ exports.put_log = function(req,res,next) {
         
               let collection_name = "customer_logs";
         
-              dbo.collection(collection_name).insertOne(myobj, function (err, res) {
+              dbo.collection(collection_name).insertOne(myobj, function (err, result) {
                 if (err)
                 {
-                    res.json({
-                        "status_code":400,
-                        "error":err.name,
-                        "message":err.message
-                    })
+                    response.error(res,err.name,err.message)
                 }
                 else{
-                    res.json({
-                        "status_code":200,
-                        "message":"Log saved Successfully",
-                        "data":res
-                    })
+                    response.success(res,"Log Saved Successfully",result)
                 }
 
               });
             });
         
           } catch (err) {
-            res.json({
-                "status_code":400,
-                "error":err.name,
-                "message":err.message
-            })
+            response.error(res,err.name,err.message)
           }
           finally{
             console.log("1 document inserted");
@@ -331,10 +275,13 @@ exports.put_log = function(req,res,next) {
 }
 /***********Driver view assigned customer */
 exports.list_of_assigned_customers = function (req, res, next) {
+    console.log("driver_id )))))--",driver_id[0].driver_id)
     Promise.coroutine(function* () {
+        console.log("driver_id )))))",driver_id[0].driver_id)
         return yield DBA.execQuery(DBSTATEMENT.assigned_customers, [driver_id[0].driver_id]);
     })().then((value) => {
         if (value) {
+            console.log("value *****",value)
             res.json({
                 "status_code": 200,
                 "message": "list of the asssigned customers",

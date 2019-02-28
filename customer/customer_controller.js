@@ -1,8 +1,9 @@
 const BCRYPT = require('bcryptjs')
 const JWT = require('jsonwebtoken')
-const DBSTATEMENT = require('../constants/dbquery.js')
-const DBA = require('../config/libs.js')
+const DBSTATEMENT = require('../services/dbquery.js')
+const DBA = require('../services/libs.js')
 const Promise = require('bluebird')
+const response = require('../services/responses.js')
 
 const SECRET_KEY= '1234@abcd';
 
@@ -21,20 +22,13 @@ exports.customer_is_already_registered = async (req, res, next) => {
     }
     catch(err)
     {
-        res.json({
-            "status_code":400,
-            "message":"Customer Not registred",
-            "data" : rest
-        })
+        response.bad_success(res,rest,"Customer Not Registered")
     }
     finally{
     if (rest) {
         if (rest.length) {
-            res.json({
-                "statusCode": 400,
-                "Error": "Bad Request",
-                "message": "User Already Registered"
-            })
+            console.log("current stop")
+            response.error(res,"Bad Request","User Already Registered")    
         }
         else {
             next();
@@ -53,32 +47,21 @@ exports.customer_signup = async (req, res, next) => {
     console.log("In sign up function")
     try{
     rest = await DBA.execQuery(DBSTATEMENT.customer_signup, obj)
-    }
+}
     catch(err)
     {
-        res.json({
-            "status_code":400,
-            "message":"error in customer signup",
-            "data":rest
-        })
+        response.bad_success(res,rest,"error in customer signup")
     }
     finally{
     if (rest) {
         console.log("Rest ++++ ", rest)
         let data = { User_Id: rest.insertId, firstname: obj[0], lastname: obj[1], email: obj[2], phone: obj[4] };
 
-        res.json({
-            "status": 201,
-            "Message": 'Registered succesfully',
-            "Data": data
-        });
+        response.success(res,"Registered succesfully",data)
+        
     }
     else {
-        res.json({
-            "status": 400,
-            "Message": 'Invalid Username or Password',
-            "ERROR": rest.ERROR
-        });
+        response.bad_success(res,rest,"Invalid Username or Password")
     }
 }
 }
@@ -109,30 +92,20 @@ exports.customer_login = async (req, res, next) => {
                 });
             }
             else {
-                res.json({
-                    "status_code": 400,
-                    "error": "Bad Request",
-                    "message": "Token Generation Error"
-                });
+                response.error(res,"Bad Request","Token Generation Error")
+                
             }
         }
         else {
-            res.json({
-                "status_code": 400,
-                "error": "Bad Request",
-                "message": "Password Not Matched"
-            })
+            response.error(res,"Bad Request","Password Not Matched")
         }
 
     }
 
     else {
         console.log('error last')
-        res.json({
-            "status_code": 400,
-            "Error": "Bad Request",
-            "Message": "Email Do Not Exist"
-        })
+        response.error(res,"Bad Request","Email Do Not Exist")
+
     } 
 }
 /************Verify Customer */
@@ -145,11 +118,7 @@ exports.verify_customer = function(req,res,next){
         if (err)
         {
         console.log("err]]]]",err)
-            res.json({
-                "status_code": 400,
-                "error": err.name,
-                "message": err.message
-            })
+        response.bad_request(res,err)
         }
             else {
             email = decoded;
@@ -166,11 +135,7 @@ exports.get_customer_id = async (req, res, next) => {
     customer_id = await DBA.execQuery(DBSTATEMENT.get_customer_id, email)
      }
      catch(err){
-            res.json({
-                "status_code": 400,
-                "error": err.name,
-                "message": err.Message
-            })
+         response.bad_request(res,err)
         }
     finally{
         next();
@@ -192,16 +157,14 @@ exports.book = async function(req, res, next){
     catch(err)
         {
             console.log("error section ")
-            res.json({
-                "status_code": 400,
-                "error": "Booking Not Placed",
-                "message": err.message
-            })
+        response.bad_success(res,err,"Booing Not Placed")
+            
         }
     finally{     
     console.log("rest ++++-------", rest)
     if (rest.insertId != 0) {
         booking_id = rest.insertId;
+    
         res.json({
             "status_code": 200,
             "message" : "Booking Successfully Placed But Not Confirmed",
@@ -224,19 +187,13 @@ exports.get_all_confirmed_bookings = function(req,res,next){
         return  yield DBA.execQuery(DBSTATEMENT.get_all_confirmed_bookings,[customer_id[0].customer_id]);    
        })().then ((value)=>{
            if(value){
-               res.json({
-                   "status_code":200,
-                   "message":"list of all confirmed bookings",
-                   "data" : value
-               })
+               response.success(res,"list of all confirmed bookings",value)
+              
            }
                else
                {
-                   res.json({
-                       "status_code":400,
-                       "message":"Error in getting list of all confirmed the bookings",
-                       "data" : value
-                   })
+                   response.error(res,"Error in getting list of all confirmed the bookings",value)
+                 
                }
            }) 
 
@@ -249,19 +206,12 @@ exports.get_all_pending_bookings = function(req,res,next){
         return  yield DBA.execQuery(DBSTATEMENT.get_all_pending_bookings,[customer_id[0].customer_id]);    
        })().then ((value)=>{
            if(value){
-               res.json({
-                   "status_code":200,
-                   "message":"list of all pending bookings",
-                   "data" : value
-               })
+               response.success(res,"List of the pending bookings",value)
+               
            }
                else
                {
-                   res.json({
-                       "status_code":400,
-                       "message":"Error in getting list of all pending bookings",
-                       "data" : value
-                   })
+                   response.bad_success(res,value,"Error in getting list of all pending bookings")
                }
            }) 
 

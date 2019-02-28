@@ -1,7 +1,7 @@
 const EXPRESS = require('express')
 const VALIDATOR = require('../validators/validator.js')
 const BODYPARSER = require('body-parser')
-const ROUTE = require('../controllers/customer_controller.js')
+const ROUTE = require('./customer_controller.js')
 
 const ROUTER = EXPRESS.Router();
 

@@ -22,6 +22,8 @@ exports.update_booking_customer = 'UPDATE `customer` SET `customer_request` = ? 
 exports.get_all_confirmed_bookings = 'SELECT `booking_id`,`driver_fname`,`driver_lname`,`source_lat`,`source_long`,`dest_lat`,`dest_long` FROM `customer` AS `c`,`driver` AS `d`,`booking` AS `b` WHERE c.customer_id = b.customer_id AND d.driver_id = b.driver_id AND b.booking_id = d.driver_current_status AND c.customer_id = ?'
 
 exports.get_all_pending_bookings= 'SELECT `booking_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long` FROM `customer` AS `c`, `booking` AS `b` WHERE b.customer_id = ? AND c.customer_id = b.customer_id AND  b.driver_id IS NULL' 
+
+exports.get_date = 'SELECT `booking_id`,`driver_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`request_history` FROM `booking` WHERE customer_id= ?  '
 //******************  Queries for driver table
 exports.driver_data = 'SELECT * FROM `driver` WHERE driver_email = ?'
 
@@ -42,7 +44,7 @@ exports.get_pending_requests = 'SELECT `booking_id` FROM `booking` WHERE `reques
 exports.get_available_drivers = 'SELECT `driver_id` FROM `driver` WHERE `driver_available` = ?'
 
 //assign driver 
-exports.assign_driver = 'UPDATE `booking` SET `driver_id` = ?,`request_pending` = ?,`driver_assigning_time`= NOW() WHERE `booking_id` = ?'
+exports.assign_driver = 'UPDATE `booking` SET `driver_id` = ?,`request_pending` = ?,`driver_assigning_time`= NOW(),`driver_assigning_admin_id` = ? WHERE `booking_id` = ?'
 
 //update task completion 
 exports.request_completed = 'UPDATE `booking` SET `request_completed` = NOW()  WHERE `driver_id`=? AND `booking_id`=? AND request_completed IS NULL'
@@ -57,7 +59,7 @@ exports.put_log = 'SELECT `booking_id`,`driver_fname`,`driver_lname`,`source_lat
 //JOINS ++++++++++
 
 //list of the assigned customers 
-exports.assigned_customers = 'SELECT `booking_id`,`customer_fname`,`customer_lname`,`customer_email`,`customer_phone`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`driver_assigning_time` FROM `customer` INNER JOIN `booking` ON customer.customer_id = booking.customer_id WHERE booking.driver_id = ? AND booking.request_completed IS NULL'
+exports.assigned_customers = 'SELECT `booking_id`,`customer_fname`,`customer_lname`,`customer_email`,`customer_phone`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`driver_assigning_time` FROM `booking` INNER JOIN `customer` ON customer.customer_id = booking.customer_id WHERE booking.driver_id = ? AND booking.request_completed IS NULL'
 
 //list of task completed drivers
 

@@ -176,13 +176,13 @@
                         "type": "string",
                         "description": "token",
                         "name": "token",
-                        "in": "formData"
+                        "in": "query"
                     },
                     {
                         "type": "number",
                         "description": "booking_id",
                         "name": "booking_id",
-                        "in": "formData"
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -285,7 +285,7 @@
             }
         }
     },
-    "/driver/assigned_customer":{
+    "/driver/assigned_customers":{
         "get":{"tags":["driver"],
             "description":"View customer detials which is assigned to the driver",
             "parameters":[ 

@@ -1,11 +1,12 @@
 const EXPRESS = require('express')
 const DB = require('./databases/mysql_connection.js')
-const ROUTE = require('./controllers/admin_controller.js')
+const ROUTE = require('./admin/admin_controller.js')
 const APP = EXPRESS();
+const PORT = require('./config/port_config')
 
-const ROUTER = require('./routers/router_admin')
-const ROUTER_CUSTOMER = require('./routers/router_customer')
-const ROUTER_DRIVER = require('./routers/router_driver')
+const ROUTER = require('./admin/router_admin')
+const ROUTER_CUSTOMER = require('./customer/router_customer')
+const ROUTER_DRIVER = require('./driver/router_driver')
 
 const SWAGGERUI = require('swagger-ui-express')
 const SWAGGERDOCUMENT = require('./swagger.json');
@@ -17,13 +18,13 @@ APP.use('/customer',ROUTER_CUSTOMER)
 APP.use('/driver',ROUTER_DRIVER)
 /******CUSTOMER API */
 
-APP.listen(3000,function(err)
+APP.listen(PORT.p.p0,function(err)
 {
     if(err)
     console.log("Error in starting the server : ");
     else
     {
-    console.log("Server started successfully on port : 3000")
+    console.log("Server started successfully on port : ",PORT.p.p0)
      DB.connection.connect((err) => {
          
          if(err)console.log('error while connecting to database')
