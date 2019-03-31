@@ -1,7 +1,7 @@
 //****************** Queries for admin table
 exports.signup = 'INSERT INTO `admin` (`admin_id`,`admin_fname`,`admin_lname`,`admin_email`,`admin_password`,`admin_phone`) VALUES (NULL,?,?,?,?,?)'
 
-exports.admin_data = 'SELECT * FROM `admin` WHERE admin_email = ?'
+exports.admin_data = 'SELECT `admin_id`,`admin_fname`,`admin_lname`,`admin_phone`,`admin_email` FROM `admin` WHERE admin_email = ?'
 
 exports.all_admin_data = 'SELECT `admin_id`,`admin_fname`,`admin_lname`,`admin_phone`,`admin_email` FROM `admin`'
 
@@ -32,6 +32,8 @@ exports.driver_signup = 'INSERT INTO `driver` ( `driver_id`,`driver_fname`,`driv
 exports.get_driver_id ='SELECT `driver_id`,`driver_current_status` FROM `driver` WHERE driver_email = ?'
 
 exports.already_assigned_or_not = 'SELECT `driver_available` FROM `driver` WHERE `driver_id` = ?'
+
+exports.get_driver_email = 'SELECT `driver_email` FROM `driver` WHERE `driver_id` = ?'
 //*****************  Queries on booking table can oly be accessed by the admin
 
 //Inserting into booking
@@ -42,6 +44,9 @@ exports.get_pending_requests = 'SELECT `booking_id` FROM `booking` WHERE `reques
 
 //getting available drivers
 exports.get_available_drivers = 'SELECT `driver_id` FROM `driver` WHERE `driver_available` = ?'
+
+//get customer id 
+exports.get_customer_id_from_booking = 'SELECT `customer_id` FROM `booking` WHERE `booking_id` = ?'
 
 //assign driver 
 exports.assign_driver = 'UPDATE `booking` SET `driver_id` = ?,`request_pending` = ?,`driver_assigning_time`= NOW(),`driver_assigning_admin_id` = ? WHERE `booking_id` = ?'
@@ -64,3 +69,15 @@ exports.assigned_customers = 'SELECT `booking_id`,`customer_fname`,`customer_lna
 //list of task completed drivers
 
 //exports.request_completed_drivers =
+/**************Queries for Customer payment Table  */
+exports.get_customer_id_from_customer_payment = 'SELECT `customer_id` from `customer_payment` WHERE customer_id = ?'
+
+exports.create_customer_payment_dashboard = 'INSERT INTO `customer_payment` (`customer_id`,`customer_gateway`,`customer_gateway_creation_time`) VALUES (?,?,?)'
+
+exports.get_customer_gateway  = 'SELECT `customer_gateway` from `customer_payment` WHERE customer_id = ?'
+
+exports.store_customer_card = 'INSERT INTO `customer_cards` (customer_id,customer_card_id,customer_card_object,customer_card_exp_month,customer_card_exp_year,customer_fingerprint,customer_funding,customer_card_last4) VALUES (?,?,?,?,?,?,?,?)'
+
+// joins 
+
+exports.get_booking_and_customer_details = 'SELECT * from `booking` LEFT JOIN `customer` ON booking.customer_id = customer.customer_id WHERE booking.booking_id = ?'

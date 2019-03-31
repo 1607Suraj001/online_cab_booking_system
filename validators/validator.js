@@ -47,3 +47,21 @@ exports.login = (req, res, next)=>{
          next();
     })
 }
+
+/*********Card Validation ****/
+exports.card_validation = (req,res,next)=>{
+    const schema = JOI.object().keys({
+        number : JOI.number().min(1000000000000000).max(9999999999999999).required(),
+        exp_month : JOI.number().min(1).max(12).required(),
+        exp_year : JOI.number().min(2019).max(2050).required(),
+        cvc : JOI.number().min(000).max(999).required()
+    })
+    JOI.validate({number:req.query.number,exp_month:req.query.exp_month,exp_year:req.query.exp_year,cvc:req.query.cvc},schema,(err,result)=>{
+        if(err){
+            console.log("ERR ++ ",err.details[0].message)
+            response.bad_request(res,err)
+        }
+        else
+        next()
+    })
+}

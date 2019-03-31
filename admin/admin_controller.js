@@ -5,6 +5,9 @@ const DBA = require('../services/libs.js')
 const Promise = require('bluebird')
 const SECRET_KEY = '1234@abcd';
 const response = require('../services/responses')
+const NODEMAILER = require('nodemailer')
+const REDIS = require('redis');
+
 
 var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
@@ -19,7 +22,7 @@ let rest
 let available_driver
 let booking_id
 let customer_id
-let admin_id 
+let admin_id
 
 /*****ADMIN REGISTERATION */
 exports.signup = async (req, res, next) => {
@@ -32,7 +35,7 @@ exports.signup = async (req, res, next) => {
         rest = await DBA.execQuery(DBSTATEMENT.signup, obj);
     }
     catch (err) {
-        response.bad_request(res,err)
+        response.bad_request(res, err)
         res.json({
             "status_code": 400,
             "error": err.name,
@@ -42,12 +45,12 @@ exports.signup = async (req, res, next) => {
     finally {
         if (rest) {
             let data = { User_Id: rest.insertId, firstname: obj[0], lastname: obj[1], email: obj[2], phone: obj[4] };
- 
-            response.success(res,"Registered succesfully",data)
+
+            response.success(res, "Registered succesfully", data)
         }
         else {
-            response.bad_success(res,rest,"Invalid Username or Password")
-            
+            response.bad_success(res, rest, "Invalid Username or Password")
+
         }
     }
 }
@@ -60,7 +63,7 @@ exports.is_already_registered = async (req, res, next) => {
 
     if (rest) {
         if (rest.length) {
-            response.error(res,"Bad Request","User Already Registered")
+            response.error(res, "Bad Request", "User Already Registered")
 
         }
         else {
@@ -89,18 +92,18 @@ exports.login = async (req, res, next) => {
                 });
             }
             else {
-                response.error(res,"Bad Request","Token Generation Error")
+                response.error(res, "Bad Request", "Token Generation Error")
             }
         }
         else {
-            response.error(res,"Bad Request","Password Not Matched")
+            response.error(res, "Bad Request", "Password Not Matched")
         }
 
     }
 
     else {
         console.log('error last')
-        response.error(res,"Bad Request","Email Do Not Exist")
+        response.error(res, "Bad Request", "Email Do Not Exist")
     }
 }
 
@@ -109,7 +112,7 @@ exports.verify_admin = async function (req, res, next) {
     console.log("verify_admin")
     JWT.verify(req.query.token, SECRET_KEY, function (err, decoded) {
         if (err)
-        response.bad_request(res,err)
+            response.bad_request(res, err)
         else {
             email = decoded;
         }
@@ -121,7 +124,7 @@ exports.verify_admin = async function (req, res, next) {
             admin_id = rest[0].admin_id
         }
         catch (err) {
-            response.bad_success(res,err,"User Not Admin")
+            response.bad_success(res, err, "User Not Admin")
         }
         finally {
             next();
@@ -135,11 +138,11 @@ exports.view_all_admin = async (req, res, next) => {
         return yield DBA.execQuery(DBSTATEMENT.all_admin_data, []);
     })().then((value) => {
         if (value) {
-     response.success(res,"list of the admin",value)
-            
+            response.success(res, "list of the admin", value)
+
         }
         else {
-            response.error(res,value,"Error in getting admin list")
+            response.error(res, value, "Error in getting admin list")
         }
     })
 
@@ -151,19 +154,17 @@ exports.get_pending_requests = async (req, res, next) => {
     let email;
     let data;
     JWT.verify(req.query.token, SECRET_KEY, function (err, decoded) {
-        if (err)
-        {
-        response.error(res,err.message,"Unauthorised")
+        if (err) {
+            response.error(res, err.message, "Unauthorised")
         }
-        else
-        {
+        else {
             email = decoded;
         }
     })
     // Verify admin or not
     let rest = await DBA.execQuery(DBSTATEMENT.verify_admin, email, function (err) {
         if (err)
-            response.error(res,err.name,err.message)
+            response.error(res, err.name, err.message)
     })
     if (rest) {
         // get all pending details 
@@ -171,12 +172,12 @@ exports.get_pending_requests = async (req, res, next) => {
             data = await DBA.execQuery(DBSTATEMENT.get_pending_requests, 1)
         }
         catch (err) {
-            response.error(res,err.message,"Pending Requests Not Found")
+            response.error(res, err.message, "Pending Requests Not Found")
         }
 
         console.log('right now ++++ ', data)
         if (data) {
-            response.success(res,"List od pending requests", data)
+            response.success(res, "List od pending requests", data)
             res.json({
                 "status_code": 200,
                 "message": "list of pending requests",
@@ -196,11 +197,11 @@ exports.get_available_drivers = async (req, res, next) => {
     catch
     {
         if (err)
-        response.error(res,"Error in getting available drivers",err.message)
- }
+            response.error(res, "Error in getting available drivers", err.message)
+    }
 
     if (rest) {
-        response.success(res,"List of the available drivers",rest)
+        response.success(res, "List of the available drivers", rest)
     }
 }
 
@@ -211,41 +212,41 @@ exports.assign_driver = async (req, res) => {
         booking_id = req.body.booking_id;
         console.log("adasd ,, dad", available_driver, booking_id)
 
-        console.log("admin_id **** ",admin_id)
+        console.log("admin_id **** ", admin_id)
         //checking whether resquest pending or not , if pending then assign driver independently otherwise free current driver 
-            let data = await DBA.execQuery(DBSTATEMENT.check_whether_request_pending, [booking_id])
-            console.log("data 0000",data[0].request_pending)
-            if (data[0].request_pending === 1) {
-              console.log("Admin_id ---",admin_id)
-                rest = await DBA.execQuery(DBSTATEMENT.assign_driver, [available_driver, 0,admin_id, booking_id])
-            }
-            else {  //case when request is being hold by another driver
-                
-                console.log("Admin_id ---->>",admin_id)
-                //getting current driver_id which is assigned to pending  request
-                let data = await DBA.execQuery(DBSTATEMENT.get_current_assigned_driver_id, [booking_id])
-                
-                //assign new dreiver to pending request
-                rest = await DBA.execQuery(DBSTATEMENT.assign_driver, [available_driver, 0,admin_id, booking_id])
-                
-                //update the row in driver_id of old driver
-                rest = await DBA.execQuery(DBSTATEMENT.update_driver_available, [1, null, data[0].driver_id])
-            }
+        let data = await DBA.execQuery(DBSTATEMENT.check_whether_request_pending, [booking_id])
+        console.log("data 0000", data[0].request_pending)
+        if (data[0].request_pending === 1) {
+            console.log("Admin_id ---", admin_id)
+            rest = await DBA.execQuery(DBSTATEMENT.assign_driver, [available_driver, 0, admin_id, booking_id])
+        }
+        else {  //case when request is being hold by another driver
+
+            console.log("Admin_id ---->>", admin_id)
+            //getting current driver_id which is assigned to pending  request
+            let data = await DBA.execQuery(DBSTATEMENT.get_current_assigned_driver_id, [booking_id])
+
+            //assign new dreiver to pending request
+            rest = await DBA.execQuery(DBSTATEMENT.assign_driver, [available_driver, 0, admin_id, booking_id])
+
+            //update the row in driver_id of old driver
+            rest = await DBA.execQuery(DBSTATEMENT.update_driver_available, [1, null, data[0].driver_id])
+        }
     }
 
     catch (err) {
-    console.log("lasr rest +++++===", rest)
-    response.error(res,err.name,err.message)
-}
-finally {
-    if (rest.changedRows === 1) {
-        response.success(res,"Driver Successfully assigned and Booking Confirmed",{})
+        console.log("lasr rest +++++===", rest)
+        response.error(res, err.name, err.message)
     }
-    else {
-        response.error(res,"Driver Not Assigned","Internal Error")
-    }
-}
+    finally {
+        if (rest.changedRows === 1) {
+            response.success(res, "Driver Successfully assigned and Booking Confirmed", {})
         }
+        else {
+            response.error(res, "Driver Not Assigned", "Internal Error")
+        }
+    }
+}
 /************Update Driver Avilable */
 exports.update_driver_available = async (req, res, next) => {
     let rest
@@ -257,7 +258,7 @@ exports.update_driver_available = async (req, res, next) => {
             rest = await DBA.execQuery(DBSTATEMENT.already_assigned_or_not, [available_driver])
         }
         catch (err) {
-            response.error(res,err.name,err.message)
+            response.error(res, err.name, err.message)
         }
         finally {
             console.log("rest ----- )))", rest)
@@ -267,14 +268,14 @@ exports.update_driver_available = async (req, res, next) => {
             else {
                 console.log
                 console.log("Driver already assigned cannot reassign a busy driver")
-                response.error(res,"Driver already assigned to another booking", "Assign a free driver")
+                response.error(res, "Driver already assigned to another booking", "Assign a free driver")
 
             }
         }
     }
     catch (err) {
         console.log("ERROR ", err)
-        response.error(res,"Error in assigning booking to driver",err.message)
+        response.error(res, "Error in assigning booking to driver", err.message)
 
     }
     finally {
@@ -291,14 +292,59 @@ exports.get_logs = function (req, res) {
         return yield DBA.execQuery(DBSTATEMENT.get_booking_data, booking_id);
     })().then((value) => {
         if (value) {
-            response.sucess(res,"List of the admin",value)
+            response.sucess(res, "List of the admin", value)
         }
         else {
-            response.error(res,"Error in getting admin list",value)
+            response.error(res, "Error in getting admin list", value)
 
         }
     })
 
+}
+
+/**************Save in redis */
+exports.save_in_redis = async function (req,res,next){
+  
+    let CLIENT = REDIS.createClient();
+     available_driver = req.body.available_drivers;
+     booking_id = req.body.booking_id;
+
+     try{
+         customer_id = await DBA.execQuery(DBSTATEMENT.get_customer_id_from_booking,booking_id)
+     }
+     catch(err)
+     {
+         responses.error(res,err)
+     }
+     finally{
+CLIENT.on('error', function(err){
+    console.log('Something went wrong ', err)
+  });
+
+CLIENT.hset(booking_id, 'driver_id', available_driver, REDIS.print);
+CLIENT.hset(booking_id, 'customer_id', customer_id[0].customer_id, REDIS.print);
+CLIENT.hset(booking_id, 'admin_id',admin_id,REDIS.print);
+
+CLIENT.hgetall(booking_id, function(err, result) {
+  console.log("REDIS DATA STORED :: ",JSON.stringify(result)); // {"key":"value","second key":"second value"}
+});
+
+next();
+     }
+}
+/***** Get booking details from redis  */
+exports.redis_details= function(req,res){
+    
+    let CLIENT = REDIS.createClient();
+    booking_id = req.query.booking_id
+
+    CLIENT.hgetall(booking_id, function(err, result) {
+        console.log("REDIS DATA STORED :: ",JSON.stringify(result)); // {"key":"value","second key":"second value"}
+        res.json({
+            "status_code" : 200,
+            "data" : result
+        }) 
+    });
 }
 
 /************Get logs */
@@ -311,47 +357,100 @@ exports.get_logs_particular = function (req, res) {
             let myobj = { Booking_id: req.query.booking_id };
 
             let collection_name = "customer_logs";
-            console.log("collection_name ***",collection_name)
-            console.log("mmyobj )))--",myobj)
+            console.log("collection_name ***", collection_name)
+            console.log("mmyobj )))--", myobj)
             dbo.collection(collection_name).findOne(myobj, function (err, result) {
                 if (err) {
                     console.log("In first if")
-                   response.error(res,err.name,err.message)
+                    response.error(res, err.name, err.message)
                 }
                 console.log("adddddd", result)
                 if (result) {
                     console.log("ins second if", result)
-                    response.success(res,"Booking Logs",result)
+                    response.success(res, "Booking Logs", result)
                 }
                 else
-                response.error(res,"No Records Found",result)
+                    response.error(res, "No Records Found", result)
             })
 
         })
     }
     catch (err) {
         console.log("in catch")
-        response.error(res,err.name,err.message)
+        response.error(res, err.name, err.message)
     }
 
 }
 
-exports.get_request_made_by_customer_on_a_particular_date = async function(req,res)
-{
+exports.get_request_made_by_customer_on_a_particular_date = async function (req, res) {
     let data;
-    console.log("reached ..... ",email)
-     try {
+    console.log("reached ..... ", email)
+    try {
         customer_id = req.query.customer_id
-         console.log("customer_id",customer_id)
-        data = await DBA.execQuery(DBSTATEMENT.get_date,[customer_id])
-       }
-       catch(err)
-       {
-        response.error(res,err.name,err.message)
-       }
-       finally{
-           response.success(res,"Booking List date",data)
-       }
+        console.log("customer_id", customer_id)
+        data = await DBA.execQuery(DBSTATEMENT.get_date, [customer_id])
+    }
+    catch (err) {
+        response.error(res, err.name, err.message)
+    }
+    finally {
+        response.success(res, "Booking List date", data)
+    }
+}
+
+/*********Send Email to Driver  */
+exports.send_email_to_driver = async (req, res, next) => {
+    let available_driver_email;
+    let details;
+
+    console.log("password ))) ", req.body.password)
+    let transporter = NODEMAILER.createTransport({
+        service: 'gmail',
+        auth: {
+            user: email,
+            pass: req.body.password
+        }
+    });
+
+    try {
+        console.log("Available_driver_id : ", req.body.available_drivers)
+        available_driver_email = await DBA.execQuery(DBSTATEMENT.get_driver_email, req.body.available_drivers)
+        console.log("Available _ driver _ email : ", available_driver_email)
+    }
+    catch (err) {
+        response.error(res, err)
+    }
+    finally {
+        console.log("Available_driver_email : ", available_driver_email)
+
+        try {
+            details = await DBA.execQuery(DBSTATEMENT.get_booking_and_customer_details, req.body.booking_id)
+        }
+        catch (err) {
+            responses.error(res, err)
+        }
+        finally {
+            console.log("Request Email , available_driver_email", email, available_driver_email[0].driver_email)
+            let mailOptions = {
+                from: email,
+                to: available_driver_email[0].driver_email,
+                subject: 'New Booking Assigned',
+                text: JSON.stringify(details[0])
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                    response.bad_request(res, error)
+                }
+                else {
+                    console.log('Email sent: ' + info.response);
+                    next();
+                    //response.success(res,info.response,info)
+                }
+            });
+        }
+    }
 }
 /////////////  CUSTOMER HANDLER ///////////
 
