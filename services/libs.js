@@ -6,8 +6,10 @@ exports.execQuery = (query,param) => {
     console.log("param :: ",param)
     return new Promise((resolve,reject)=>{
         DB.connection.query(query, param, (err,result) => {
-            if(err)
-            reject(err)
+            if(err){
+                console.log("err in query :: ",err)
+                reject(err)
+            }
             console.log(result)
             resolve(result)
         })

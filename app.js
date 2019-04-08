@@ -33,3 +33,27 @@ APP.listen(PORT.p.p0,function(err)
         }) 
 }
 })
+
+/*set @r = GeomFromText('POLYGON((30.725471 76.675637,30.662898 76.735002,30.726582 76.827737,30.780039 76.783146,30.725471 76.675637))');
+set @p = GeomFromText('POINT(30.725600 76.764208)');
+select if(contains(@r, @p), 'yes', 'no');
+
+SELECT ( 3959 * acos( cos( radians(42.290763) ) * cos( radians( 30.725600 ) ) 
+   * cos( radians(76.764208) - radians(-71.35368)) + sin(radians(42.290763)) 
+   * sin( radians(30.725600)))) AS distance
+   
+
+   ( 3959 * acos( cos( radians(42.290763) ) * cos( radians( locations.lat ) ) 
+   * cos( radians(locations.lng) - radians(-71.35368)) + sin(radians(42.290763)) 
+   * sin( radians(locations.lat)))) AS distance 
+   * 
+   * 
+   * SELECT driver_id FROM `driver` WHERE (SELECT ( 3959 * acos( cos( radians(X(driver.driver_location)) ) * cos( radians(30.725600) ) ) 
+   * cos( radians(Y(driver.driver_location))) - radians(-71.35368)) + sin(radians(X(driver.driver_location))) 
+   * sin( radians(30.725600)) AS distance)
+   * 
+   /// Minimum Distance 
+   SELECT DISTINCT  driver.driver_id ,booking.customer_id,MIN((SELECT ( 3959 * acos( cos( radians(X(driver.driver_location)) ) * cos( radians(booking.source_lat) ) ) 
+   * cos( radians(Y(driver.driver_location))) - radians(booking.source_long)) + sin(radians(X(driver.driver_location))) 
+   * sin( radians(booking.source_lat)) ))AS distance FROM `driver`,`booking` WHERE driver_available = 1 AND booking.customer_id = 3 ORDER BY distance ASC
+    */

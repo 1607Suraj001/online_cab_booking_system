@@ -23,7 +23,12 @@ exports.get_all_confirmed_bookings = 'SELECT `booking_id`,`driver_fname`,`driver
 
 exports.get_all_pending_bookings= 'SELECT `booking_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long` FROM `customer` AS `c`, `booking` AS `b` WHERE b.customer_id = ? AND c.customer_id = b.customer_id AND  b.driver_id IS NULL' 
 
-exports.get_date = 'SELECT `booking_id`,`driver_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`request_history` FROM `booking` WHERE customer_id= ?  '
+exports.get_date = 'SELECT `booking_id`,`driver_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`request_history` FROM `booking` WHERE customer_id= ?   '
+
+exports.check_service_available = `set @r = GeomFromText("POLYGON((30.725471 76.675637,30.662898 76.735002,30.726582 76.827737,30.780039 76.783146,30.725471 76.675637))");set @p = GeomFromText("POINT(? ?)");select if(contains(@r, @p),'yes','no');`
+
+exports.get_nearest_driver = 'SELECT DISTINCT  driver.driver_id ,booking.customer_id,MIN((SELECT ( 3959 * acos( cos( radians(X(driver.driver_location)) ) * cos( radians(booking.source_lat) ) ) * cos( radians(Y(driver.driver_location))) - radians(booking.source_long)) + sin(radians(X(driver.driver_location))) * sin( radians(booking.source_lat)) ))AS distance FROM `driver`,`booking` WHERE driver.driver_available = ? AND booking.customer_id = ? ORDER BY distance ASC ;'
+
 //******************  Queries for driver table
 exports.driver_data = 'SELECT * FROM `driver` WHERE driver_email = ?'
 
