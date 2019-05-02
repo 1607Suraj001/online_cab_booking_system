@@ -81,9 +81,10 @@ exports.login = async (req, res, next) => {
 
     if (rest[0]) {
         let v = await BCRYPT.compareSync(req.query.password, rest[0].admin_password);
+        console.log()
         if (v) {
             let token = await JWT.sign(email, SECRET_KEY)
-
+                
             if (token) {
                 res.json({
                     "status_code": 200,
@@ -206,7 +207,7 @@ exports.get_available_drivers = async (req, res, next) => {
 }
 
 ////////////// Assign Driver update booking table 
-exports.assign_driver = async (req, res) => {
+exports.assign_driver = async (req, res,next) => {
     try {
         available_driver = req.body.available_drivers;
         booking_id = req.body.booking_id;
@@ -241,6 +242,7 @@ exports.assign_driver = async (req, res) => {
     finally {
         if (rest.changedRows === 1) {
             response.success(res, "Driver Successfully assigned and Booking Confirmed", {})
+            next()
         }
         else {
             response.error(res, "Driver Not Assigned", "Internal Error")
@@ -344,7 +346,7 @@ exports.redis_details= function(req,res){
             "status_code" : 200,
             "data" : result
         }) 
-    });
+        });
 }
 
 /************Get logs */
@@ -354,33 +356,39 @@ exports.get_logs_particular = function (req, res) {
             if (err) throw err;
             let dbo = db.db("my_database");
             console.log(req.query.booking_id)
-            let myobj = { Booking_id: req.query.booking_id };
+            let myobj = {
+                "booking_id" : req.query.booking_id
+            }
+    
 
             let collection_name = "customer_logs";
             console.log("collection_name ***", collection_name)
             console.log("mmyobj )))--", myobj)
+            new Promise(function(resolve,reject){
             dbo.collection(collection_name).findOne(myobj, function (err, result) {
                 if (err) {
-                    console.log("In first if")
-                    response.error(res, err.name, err.message)
+                 reject(err);
                 }
-                console.log("adddddd", result)
+                console.log("rrrrrrrrrrrrrrrrrr",result)
                 if (result) {
                     console.log("ins second if", result)
-                    response.success(res, "Booking Logs", result)
+                    response.success(res, "Booking Logs", result)            
                 }
                 else
+                  console.log("eeeeeeeeeeeeeeeeee",err)
                     response.error(res, "No Records Found", result)
-            })
+                })
 
         })
-    }
+    })
+}
     catch (err) {
-        console.log("in catch")
+        console.log("Error ::: ",err)
         response.error(res, err.name, err.message)
     }
+    }
 
-}
+
 
 exports.get_request_made_by_customer_on_a_particular_date = async function (req, res) {
     let data;
@@ -445,7 +453,6 @@ exports.send_email_to_driver = async (req, res, next) => {
                 }
                 else {
                     console.log('Email sent: ' + info.response);
-                    next();
                     //response.success(res,info.response,info)
                 }
             });

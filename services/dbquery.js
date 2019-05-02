@@ -1,7 +1,7 @@
 //****************** Queries for admin table
 exports.signup = 'INSERT INTO `admin` (`admin_id`,`admin_fname`,`admin_lname`,`admin_email`,`admin_password`,`admin_phone`) VALUES (NULL,?,?,?,?,?)'
 
-exports.admin_data = 'SELECT `admin_id`,`admin_fname`,`admin_lname`,`admin_phone`,`admin_email` FROM `admin` WHERE admin_email = ?'
+exports.admin_data = 'SELECT `admin_id`,`admin_fname`,`admin_lname`,`admin_phone`,`admin_email`,`admin_password` FROM `admin` WHERE admin_email = ?'
 
 exports.all_admin_data = 'SELECT `admin_id`,`admin_fname`,`admin_lname`,`admin_phone`,`admin_email` FROM `admin`'
 
@@ -39,6 +39,8 @@ exports.get_driver_id ='SELECT `driver_id`,`driver_current_status` FROM `driver`
 exports.already_assigned_or_not = 'SELECT `driver_available` FROM `driver` WHERE `driver_id` = ?'
 
 exports.get_driver_email = 'SELECT `driver_email` FROM `driver` WHERE `driver_id` = ?'
+
+exports.get_booking_id= 'SELECT `booking_id` FROM `booking` WHERE `driver_id` = ?'
 //*****************  Queries on booking table can oly be accessed by the admin
 
 //Inserting into booking

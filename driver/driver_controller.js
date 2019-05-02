@@ -174,7 +174,14 @@ exports.verify_driver = async function (req, res, next) {
 /***********Driver update task complete in booking table */
 exports.request_completed = function (req, res, next) {
     Promise.coroutine(function* () {
-        return yield DBA.execQuery(DBSTATEMENT.request_completed, [driver_id[0].driver_id,driver_id[0].driver_current_status]);
+        console.log("Email :: ",email);
+         driver_id = yield DBA.execQuery(DBSTATEMENT.driver_data ,[email]);
+         var booking_id;
+        if(Array.isArray(driver_id) ){
+          booking_id = yield DBA.execQuery(DBSTATEMENT.get_booking_id,[driver_id[0].driver_id])
+        }
+        if(Array.isArray(booking_id))
+        return yield DBA.execQuery(DBSTATEMENT.request_completed, [driver_id[0].driver_id, booking_id[0].booking_id]);
     })().then((value) => {
         if (value.changedRows != 0) {
             next();
@@ -189,7 +196,7 @@ exports.request_completed = function (req, res, next) {
 exports.updating_driver_available = function (req, res, next) {
     console.log("updating drivers portion ")
     Promise.coroutine(function* () {
-        return yield DBA.execQuery(DBSTATEMENT.update_driver_available, [1, 0, driver_id[0].driver_id]);
+        return yield DBA.execQuery(DBSTATEMENT.update_driver_available, [1, null, driver_id[0].driver_id]);
     })().then((value) => {
         if (value) {
             console.log("moving to get logs")
@@ -242,25 +249,24 @@ exports.put_log = function(req,res,next) {
         
               let collection_name = "customer_logs";
         
-              dbo.collection(collection_name).insertOne(myobj, function (err, result) {
+    new Promise(function (resolve,reject){
+           dbo.collection(collection_name).insertOne(myobj, function (err, result) {
                 if (err)
                 {
-                    response.error(res,err.name,err.message)
+                    resolve(err);
                 }
                 else{
+                    console.log("response :::::::: ",result)
+                    console.log("1 document inserted");
                     response.success(res,"Log Saved Successfully",result)
+                    db.close();
                 }
-
-              });
+                });
             });
+        })
         
           } catch (err) {
             response.error(res,err.name,err.message)
-          }
-          finally{
-            console.log("1 document inserted");
-            db.close();
-           
           }
 
         }

@@ -159,6 +159,13 @@
                         "description": "Booking_id",
                         "name": "booking_id",
                         "in": "formData"
+                    },
+                    {
+                        "type":"string",
+                        "format":"password",
+                        "description":"Password",
+                        "name":"password",
+                        "in":"formData"
                     }
                 ],
                 "responses": {
