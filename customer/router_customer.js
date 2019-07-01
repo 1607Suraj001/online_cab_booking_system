@@ -17,6 +17,7 @@ ROUTER.post('/book',ROUTE.verify_customer,ROUTE.get_customer_id,ROUTE.check_serv
 ROUTER.get('/all_confirmed_bookings',ROUTE.verify_customer,ROUTE.get_customer_id,ROUTE.get_all_confirmed_bookings)
 ROUTER.get('/all_pending_bookings',ROUTE.verify_customer,ROUTE.get_customer_id,ROUTE.get_all_pending_bookings)
 ROUTER.get('/customer_payment_gateway_and_store_customer_card_details',ROUTE.verify_customer,ROUTE.get_customer_id,VALIDATOR.card_validation,ROUTE.generating_card_token,ROUTE.create_customer_payment_gateway,ROUTE.generating_customer_card_token_storing_card_details_of_customer)
+ROUTER.get('/make_payment',ROUTE.verify_customer,ROUTE.get_customer_id,VALIDATOR.validate_payment,ROUTE.make_payment)
 module.exports = ROUTER;
 
 //

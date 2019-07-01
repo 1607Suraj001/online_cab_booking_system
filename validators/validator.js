@@ -43,7 +43,8 @@ exports.login = (req, res, next)=>{
             console.log("ERR ++",err.details[0].message)
            response.bad_request(res,err);
         }
-        else
+        else            
+        
          next();
     })
 }
@@ -64,4 +65,22 @@ exports.card_validation = (req,res,next)=>{
         else
         next()
     })
+}
+
+/**************VAlidate Payment ****/
+exports.validate_payment = (req,res,next)=>{
+const schema = JOI.object().keys({
+    amount : JOI.number().min(0).required(),
+    currency : JOI.string().valid('usd').required(),
+    description : JOI.string().required()    
+})
+
+JOI.validate({amount:req.body.amount,currency:req.body.currency,description:req.body.description},schema,(err,result)=>{
+    if(err){
+        console.log("ERR ++ ",err.details[0].message)
+        response.bad_request(res,err)
+    }
+    else if(result)
+    next()
+})
 }

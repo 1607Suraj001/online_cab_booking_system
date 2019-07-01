@@ -8,7 +8,7 @@ const STRIPE = require("stripe")("sk_test_VKx3WB88ZMtNTt9LOueZcvhz00Rnplefkz");
 const PAYMENT_FUNCTIONS = require('../services/payment_functions')
 const NODEMAILER = require('nodemailer')
 const REDIS = require('redis');
-
+const _     = require('underscore')
 
 const SECRET_KEY = '1234@abcd';
 
@@ -168,6 +168,7 @@ exports.create_customer_payment_gateway = async function (req, res, next) {
                         console.log("Customer Details", customer.id);
                         try {
                             let obj = await DBA.execQuery(DBSTATEMENT.create_customer_payment_dashboard, [customer_id[0].customer_id, customer.id, customer.created])
+                            console.log("OOOOOOOOOOOOOOOOOOOOOOOOO ++ ",customer.created)
                         }
                         catch (err) {
                             response.error(res, err)
@@ -205,14 +206,18 @@ exports.check_service_available = async (req, res,next) => {
     let dest_lat = req.body.dest_lat
     let dest_long = req.body.dest_long
 
+
     try {
 
         flag = await DBA.execQuery(DBSTATEMENT.check_service_available, [source_lat, source_long]);
-        console.log("flag __-- ", flag[2][0][`if(contains(@r, @p),'yes','no')`])
-        if (flag[2][0][`if(contains(@r, @p),'yes','no')`] === 'yes')
-            flag1 = await DBA.execQuery(DBSTATEMENT.check_service_available, [dest_lat, dest_long]);
-
-        if (flag[2][0][`if(contains(@r, @p),'yes','no')`] === 'yes' && flag1[2][0][`if(contains(@r, @p),'yes','no')`] === 'yes') {
+        console.log("flag __-- ",flag[2][0][`if(contains(@r, @p),'no','yes')`])
+        console.log(typeof 'yes');
+        if (flag[2][0][`if(contains(@r, @p),'no','yes')`] == 'yes'){
+            flag1 = await DBA.execQuery(DBSTATEMENT.check_service_available, [dest_lat, dest_long]);  
+            next();
+        }
+         
+    /*    if (flag[2][0][`if(contains(@r, @p),'no','yes')`] === 'yes' && flag1[2][0][`if(contains(@r, @p),'no','yes')`] === 'yes') {
             console.log("got it ")
             nearest_driver = await DBA.execQuery(DBSTATEMENT.get_nearest_driver, [1, customer_id[0].customer_id])
             console.log("Nearest_driver 000 ", nearest_driver)
@@ -220,7 +225,7 @@ exports.check_service_available = async (req, res,next) => {
         }
         else {
             response.error(res, "Uncovered Location", "No Services Available");
-        }
+        }*/
     }
     catch (err) {
         console.log("Didnt got ", err)
@@ -460,7 +465,9 @@ exports.get_customer_id = async (req, res, next) => {
 /**************CUSTOMER BOOKING */
 
 exports.book = async function (req, res, next) {
-    let obj = [customer_id[0].customer_id, req.body.source_lat, req.body.source_long, req.body.dest_lat, req.body.dest_long]
+    console.log("Customer_id ]]]]]]]]]] ", customer_id[0].customer_id)
+    console.log("Body {",req.body,"}")
+    let obj = [customer_id[0].customer_id,req.body.Booking_Type, req.body.source_lat, req.body.source_long, req.body.dest_lat, req.body.dest_long]
 
     console.log("Object ;++++++ ;", obj);
     let rest;
@@ -476,8 +483,7 @@ exports.book = async function (req, res, next) {
         console.log("rest ++++-------", rest)
         if (rest.insertId != 0) {
             booking_id = rest.insertId;
-
-            next();
+            response.success(res, "Booking Placed Successfully", rest)
         }
         else {
             res.json({
@@ -523,6 +529,34 @@ exports.get_all_pending_bookings = function (req, res, next) {
     })
 
 }
+
+/*******************Make Payment ****/
+exports.make_payment = function(req,res,next){
+    Promise.coroutine(function*(){
+        console.log("Payment __  ::::;;;;;;;;;;;;;;; ",req.body)
+
+        let card = yield DBA.execQuery(DBSTATEMENT.get_customer_card,[customer_id[0].customer_id]);
+      
+        if(!_.isEmpty(card)){        
+        console.log("card ::::::::;;;;;;;;;;;;;;;;;;;;; ",card);
+        req.body.card = card;
+        console.log("req.body.card ))))))))))))))))))))))))))" , req.body)
+    
+       return  yield PAYMENT_FUNCTIONS.make_payment_from_card(req, res);
+      }else
+      {
+        response.bad_success(res, value, "No card exists")    
+      }
+         })().then((value) =>{
+        if(value){
+            response.success(res, "Payment_successful", value)
+        }else
+        {
+            response.bad_success(res, value, "Error in payment")
+        }
+    })
+}
+
 
 /*/**************UPDATE BOOKING CUSTOMER
 exports.update_booking_customer = async (req, res, next)=>{

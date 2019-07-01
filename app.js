@@ -27,7 +27,7 @@ APP.listen(PORT.p.p0,function(err)
     console.log("Server started successfully on port : ",PORT.p.p0)
      DB.connection.connect((err) => {
          
-         if(err)console.log('error while connecting to database')
+         if(err)console.log('error while connecting to database',err)
          else
          console.log('database connected')
         }) 

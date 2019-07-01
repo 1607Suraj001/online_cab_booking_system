@@ -35,7 +35,7 @@
                         "in": "formData"
                     },
                     {
-                        "type": "string",
+                        "type": "number",
                         "description": "Phone Number",
                         "name": "phone",
                         "in": "formData"
@@ -166,30 +166,6 @@
                         "description":"Password",
                         "name":"password",
                         "in":"formData"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/admin/get_logs_particular": {
-            "get": {"tags":["admin"],
-                "description": "Getting logs of the particular booking_id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "token",
-                        "name": "token",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "booking_id",
-                        "name": "booking_id",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -394,6 +370,12 @@
                     "in": "query"
                 },
                 {
+                   "type":"string",
+                   "description":"booking_type",
+                   "name":"Booking_Type",
+                   "in": "formData"
+                },
+                {
                     "type": "float",
                     "description": "Source_Latitude",
                     "name": "source_lat",
@@ -460,6 +442,82 @@
                 }
             }
         }
+    },
+        "/customer/customer_payment_gateway_and_store_customer_card_details": {
+        "get": {"tags":["customer"],
+            "description": "customer_payment_gateway_and_store_customer_card_details",
+            "parameters": [
+                {
+                    "type": "string",
+                    "description": "Token",
+                    "name": "token",
+                    "in": "query"
+                },                
+                {
+                    "type": "number",
+                    "description": "Visa_Card",
+                    "name": "number",
+                    "in": "query"
+                },
+                {
+                    "type": "number",
+                    "description": "Card Expiry Month",
+                    "name": "exp_month",
+                    "in": "query"
+                },
+                {
+                    "type": "number",
+                    "description": "Card Expiry Year",
+                    "name": "exp_year",
+                    "in": "query"
+                },                {
+                    "type": "cvc",
+                    "description": "Card CVC Number",
+                    "name": "cvc",
+                    "in": "query"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": ""
+                }
+            }
+        }
+    },
+    "/customer/make_payment": {
+        "get": {"tags":["customer"],
+            "description": "Customer view its all confirmed bookings",
+            "parameters": [
+                {
+                    "type": "string",
+                    "description": "Token",
+                    "name": "token",
+                    "in": "query"
+                },
+                {
+                    "type": "number",
+                    "description": "Amount to be paid",
+                    "name": "amount",
+                    "in": "formData"
+                },                {
+                    "type": "string",
+                    "description": "Currency of amount to be paid",
+                    "name": "currency",
+                    "in": "formData"
+                },                {
+                    "type": "string",
+                    "description": "Description about payment",
+                    "name": "description",
+                    "in": "formData"
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": ""
+                }
+            }
+        }
     }
+
     }
 }

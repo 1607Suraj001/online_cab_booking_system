@@ -9,7 +9,7 @@ exports.verify_admin = 'SELECT `admin_id` FROM `admin` WHERE admin_email = ?'
 
 exports.update_driver_available = 'UPDATE `driver` SET `driver_available` = ?,`driver_current_status`=? WHERE `driver_id`=? '
 //****************** Queries for customer table
-exports.customer_signup = 'INSERT INTO `customer` (`customer_id`,`customer_fname`,`customer_lname`,`customer_email`,`customer_password`,`customer_phone`,`customer_history`) VALUES (NULL,?,?,?,?,?,NULL)'
+exports.customer_signup = 'INSERT INTO `customer` (`customer_id`,`customer_fname`,`customer_lname`,`customer_email`,`customer_password`,`customer_phone`) VALUES (NULL,?,?,?,?,?)'
 
 exports.customer_data = 'SELECT * FROM `customer` WHERE customer_email = ?'
 
@@ -25,14 +25,14 @@ exports.get_all_pending_bookings= 'SELECT `booking_id`,`source_lat`,`source_long
 
 exports.get_date = 'SELECT `booking_id`,`driver_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`request_history` FROM `booking` WHERE customer_id= ?   '
 
-exports.check_service_available = `set @r = GeomFromText("POLYGON((30.725471 76.675637,30.662898 76.735002,30.726582 76.827737,30.780039 76.783146,30.725471 76.675637))");set @p = GeomFromText("POINT(? ?)");select if(contains(@r, @p),'yes','no');`
+exports.check_service_available = `set @r = GeomFromText("POLYGON((30.725471 76.675637,30.662898 76.735002,30.726582 76.827737,30.780039 76.783146,30.725471 76.675637))");set @p = GeomFromText("POINT(? ?)");select if(contains(@r, @p),'no','yes');`
 
 exports.get_nearest_driver = 'SELECT DISTINCT  driver.driver_id ,booking.customer_id,MIN((SELECT ( 3959 * acos( cos( radians(X(driver.driver_location)) ) * cos( radians(booking.source_lat) ) ) * cos( radians(Y(driver.driver_location))) - radians(booking.source_long)) + sin(radians(X(driver.driver_location))) * sin( radians(booking.source_lat)) ))AS distance FROM `driver`,`booking` WHERE driver.driver_available = ? AND booking.customer_id = ? ORDER BY distance ASC ;'
 
 //******************  Queries for driver table
 exports.driver_data = 'SELECT * FROM `driver` WHERE driver_email = ?'
 
-exports.driver_signup = 'INSERT INTO `driver` ( `driver_id`,`driver_fname`,`driver_lname`,`driver_available`,`driver_current_status`,`driver_email`,`driver_password`,`driver_phone`,`driver_history`) VALUES (NULL,?,?,?,NULL,?,?,?,NULL)'
+exports.driver_signup = 'INSERT INTO `driver` ( `driver_id`,`driver_fname`,`driver_lname`,`driver_available`,`driver_current_status`,`driver_email`,`driver_password`,`driver_phone`) VALUES (NULL,?,?,?,NULL,?,?,?)'
 
 exports.get_driver_id ='SELECT `driver_id`,`driver_current_status` FROM `driver` WHERE driver_email = ?'
 
@@ -44,7 +44,7 @@ exports.get_booking_id= 'SELECT `booking_id` FROM `booking` WHERE `driver_id` = 
 //*****************  Queries on booking table can oly be accessed by the admin
 
 //Inserting into booking
-exports.book = 'INSERT INTO `booking` (`booking_id`,`customer_id`,`driver_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`request_pending`,`request_completed`,`request_history`) VALUES(NULL,?,NULL,?,?,?,?,1,NULL,NULL)'
+exports.book = 'INSERT INTO `booking` (`booking_id`,`booking_type`,`customer_id`,`driver_id`,`source_lat`,`source_long`,`dest_lat`,`dest_long`,`request_pending`,`request_completed`) VALUES(NULL,?,?,NULL,?,?,?,?,1,0)'
 
 // getting booking_id  to whom No Driver is assigned 
 exports.get_pending_requests = 'SELECT `booking_id` FROM `booking` WHERE `request_pending` = ?'
@@ -88,3 +88,5 @@ exports.store_customer_card = 'INSERT INTO `customer_cards` (customer_id,custome
 // joins 
 
 exports.get_booking_and_customer_details = 'SELECT * from `booking` LEFT JOIN `customer` ON booking.customer_id = customer.customer_id WHERE booking.booking_id = ?'
+
+exports.get_customer_card = 'SELECT customer_card_id from `customer_cards` where customer_id = ?'

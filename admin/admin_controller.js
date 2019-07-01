@@ -195,8 +195,7 @@ exports.get_available_drivers = async (req, res, next) => {
     try {
         rest = await DBA.execQuery(DBSTATEMENT.get_available_drivers, 1)
     }
-    catch
-    {
+    catch(err){
         if (err)
             response.error(res, "Error in getting available drivers", err.message)
     }

@@ -180,10 +180,13 @@ exports.request_completed = function (req, res, next) {
         if(Array.isArray(driver_id) ){
           booking_id = yield DBA.execQuery(DBSTATEMENT.get_booking_id,[driver_id[0].driver_id])
         }
-        if(Array.isArray(booking_id))
-        return yield DBA.execQuery(DBSTATEMENT.request_completed, [driver_id[0].driver_id, booking_id[0].booking_id]);
+        
+        if(Array.isArray(booking_id)&& booking_id.length)    
+            return yield DBA.execQuery(DBSTATEMENT.request_completed, [driver_id[0].driver_id, booking_id[0].booking_id]);
+        else
+            response.error(res,"cannot update task_completed","No task assigned")
     })().then((value) => {
-        if (value.changedRows != 0) {
+        if (value!=undefined && value.changedRows != 0) {
             next();
         }
         else {
