@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "async": "^2.6.2",
+    "async": "^3.2.2",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.3",
     "express": "^4.16.4",
